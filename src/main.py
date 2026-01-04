@@ -1,31 +1,29 @@
 import os
 import shutil
-from textnode import TextNode, TextType
 
-STATIC_DIR = "static"
-PUBLIC_DIR = "public"
+from copystatic import copy_files_recursive
+from gencontent import generate_page
 
-def copy_dir(src_name: str, dst_name: str) -> None:
-    for file_name in os.listdir(src_name):
-        src_path = os.path.join(src_name, file_name)
-        dst_path = os.path.join(dst_name, file_name)
+dir_path_static = "./static"
+dir_path_public = "./public"
+dir_path_content = "./content"
+template_path = "./template.html"
 
-        if os.path.isfile(src_path):
-            print(f"Copying file {src_path}")
-            shutil.copy(src_path, dst_path)
-        else:
-            os.mkdir(dst_path)
-            print(f"Copying dir {src_path}")
-            copy_dir(src_path, dst_path)
 
 def main():
-    if not os.path.exists(STATIC_DIR):
-        raise FileNotFoundError(f"{STATIC_DIR} does not exist")
+    print("Deleting public directory...")
+    if os.path.exists(dir_path_public):
+        shutil.rmtree(dir_path_public)
 
-    if os.path.exists(PUBLIC_DIR):
-        shutil.rmtree(PUBLIC_DIR)
-    os.mkdir(PUBLIC_DIR)
+    print("Copying static files to public directory...")
+    copy_files_recursive(dir_path_static, dir_path_public)
 
-    copy_dir(STATIC_DIR, PUBLIC_DIR)
+    print("Generating page...")
+    generate_page(
+        os.path.join(dir_path_content, "index.md"),
+        template_path,
+        os.path.join(dir_path_public, "index.html"),
+    )
+
 
 main()
